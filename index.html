@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Psychology Difficulty Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Load html2canvas for PNG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #330014, #660033); /* pink gradient */
+      margin: 0;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      text-shadow: 0 0 4px rgba(255,170,200,0.5);
+    }
+    h1 {
+      margin-top: 25px;
+      font-size: 2.3em;
+      text-align: center;
+      padding: 0 10px;
+      color: #ffd5e8;
+      text-shadow: 0 0 12px #ff5ca8, 0 0 25px #c2185b;
+    }
+    .container {
+      width: 95%;
+      max-width: 1100px;
+      margin: 20px 0;
+      padding: 14px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 25px rgba(255,105,180,0.4);
+      backdrop-filter: blur(10px);
+    }
+    .unit-header {
+      font-size: 1.4em;
+      font-weight: bold;
+      margin: 20px 0 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255,105,180,0.2);
+      color: #ffe3ef;
+      text-shadow: 0 0 6px #ff80bf;
+      box-shadow: inset 0 0 12px rgba(255, 105, 180, 0.6);
+    }
+    .topic {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 7px;
+      margin: 14px 0;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 15px rgba(255,105,180,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .topic:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 25px rgba(255,150,200,0.8);
+    }
+    .topic-title {
+      font-size: 1.1em;
+      width: 54%;
+      font-weight: 600;
+      word-break: break-word;
+      padding-right: 10px;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 180px;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 140px;
+      height: 7px;
+      border-radius: 4px;
+      background: #ccc;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 12px #ff5ca8;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #ffd5e8;
+    }
+    .label {
+      font-size: 1em;
+      font-weight: bold;
+      padding: 6px 15px;
+      border-radius: 10px;
+      min-width: 121px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255,150,200,0.7);
+    }
+    .dk { background: #d81b60; }   /* dark pink for don't know */
+    .easy { background: #4caf50; }
+    .med { background: #fb8c00; }
+    .hard { background: #e53935; }
+    .btn {
+      padding: 13px 26px;
+      margin: 11px 7px;
+      font-size: 1.11em;
+      border-radius: 10px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff4081, #c2185b);
+      color: #fff;
+      border: none;
+      box-shadow: 0 0 20px rgba(255,105,180,0.7);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #c2185b, #ff4081);
+    }
+    #report {
+      margin-top: 23px;
+      background: #330014;
+      color: #eee;
+      padding: 16px;
+      border-radius: 13px;
+      box-shadow: 0 0 20px rgba(255,105,180,0.6);
+      width: 99%;
+      max-width: 505px;
+      margin-bottom: 28px;
+      font-size: 0.85em;
+      overflow-wrap: anywhere;
+    }
+    #report h2 {
+      color: #ffd5e8;
+      text-shadow: 0 0 10px #ff80bf;
+    }
+    .report-item {
+      padding: 8px 6px;
+      margin: 5px 0;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.9em;
+      color: white;
+      box-shadow: 0 0 12px rgba(180,90,255,0.4);
+      white-space: normal;
+      word-break: break-word;
+    }
+    .report-item.dk { background: #d81b60; }
+    .report-item.easy { background: #4caf50; }
+    .report-item.med { background: #fb8c00; }
+    .report-item.hard { background: #e53935; }
+    .summary {
+      margin-top: 12px;
+      font-size: 0.95em;
+      font-weight: bold;
+      color: #ffd5e8;
+      text-align: center;
+      text-shadow: 0 0 8px #ff4081;
+    }
+    footer {
+      margin: 20px 0 8px 0;
+      padding: 14px;
+      text-align: center;
+      color: #ffd5e8;
+      text-shadow: 0 0 8px #ff4081;
+      user-select: none;
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8em; }
+      .topic { flex-direction: column; align-items: stretch; gap: 12px; }
+      .topic-title { width: 100%; font-size: 1em; }
+      .slider-container { flex-direction: row; justify-content: space-between; width: 100%; }
+      .btn { width: 100%; margin: 8px 0; text-align: center; }
+      #report { max-width: 100%; font-size: 0.85em; }
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6em; }
+      .topic-title { font-size: 0.95em; }
+      input[type="range"] { width: 100%; max-width: 100%; }
+      .label { font-size: 0.8em; padding: 5px 10px; }
+      #report { font-size: 0.85em; }
+    }
+    @media (max-width: 340px) {
+      .slider-container { flex-direction: column; align-items: stretch; gap: 8px; }
+      .label { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Psychology Concepts Difficulty Tracker</h1>
+  <div class="container" id="tracker"></div>
+  <div>
+    <button class="btn" onclick="generateReport()">Generate Report</button>
+    <button class="btn" onclick="downloadPNG()">Download PNG</button>
+    <button class="btn" onclick="clearAll()">Clear All</button>
+  </div>
+  <div id="report"></div>
+  <footer>2025 Surbhi Sharma &nbsp; @surbhipsychtutor</footer>
+  <script>
+    const topics = [
+      { type: "header", text: "Unit I: Variations in Psychological Attributes" },
+      "Introduction",
+      "Individual Differences in Human Functioning",
+      "Assessment of Psychological Attributes",
+      "Intelligence",
+      "Psychometric Theories of Intelligence", 
+      "Pass Model of Intelligence", 
+      "Triarchic Theory of Intelligence", 
+      "Theory of Multiple Intelligences",
+      "Individual Differences in Intelligence",
+      "Culture and Intelligence",
+      "Emotional Intelligence",
+      "Special Abilities: Aptitude: Nature and Measurement",
+      "Creativity",
+
+      { type: "header", text: "Unit II: Self and Personality" },
+      "Introduction",
+      "Self and Personality",
+      "Concept of Self", 
+      "Personal identity", 
+      "Social identity", 
+      "Self as Subject and Self as Object",
+      "Kinds of Self",
+      "Cognitive & Behavioural aspects of Self",
+      "Self-esteem", 
+      "Self-efficacy",
+      "Self-regulation", 
+      "Psychological techniques of self-control",
+      "Culture and Self",
+      "Concept of Personality",
+      "Personality-related Terms",
+      "Major Approaches to the Study of Personality",
+      "Type Approaches",
+      "Trait Approaches",
+      "Psychodynamic Approach",
+      "Ego Defence Mechanisms", 
+      "Post Freudian-Jung, Karen Horney, Alfred Adler, Eric Fromm, Erik Erikson",
+      "Five-Factor Model of Personality",
+      "Behavioural Approach",
+      "Cultural Approach",
+      "Humanistic Approach",
+      "Assessment of Personality",
+      "Self-report Measures",
+      "Projective Techniques",
+      "Behavioural Analysis",
+
+      { type: "header", text: "Unit III: Meeting Life Challenges" },
+      "Introduction",
+      "Nature of Stress",
+      "Types of Stress",
+      "Sources of Stress",
+      "Effects of Stress on Psychological Functioning and Health",
+      "Stress and Health",
+      "General Adaptation Syndrome",
+      "Stress and Immune System",
+      "Lifestyle",
+      "Coping with Stress",
+      "Stress Management Techniques",
+      "Promoting Positive Health and Well-being",
+      "Life Skills",
+      "Positive Health",
+
+      { type: "header", text: "Unit IV: Psychological Disorders" },
+      "Introduction",
+      "Concepts of Abnormality and Psychological Disorders",
+      "Historical Background",
+      "Classification of Psychological Disorders",
+      "Factors Underlying Abnormal Behaviour",
+      "Major Psychological Disorders",
+      "Anxiety Disorders",
+      "Obsessive-Compulsive and Related Disorders",
+      "Trauma-and Stressor-Related Disorders",
+      "Somatic Symptom and Related Disorders",
+      "Dissociative Disorders",
+      "Depressive Disorder",
+      "Bipolar and Related Disorders",
+      "Schizophrenia Spectrum and Other Psychotic Disorders",
+      "Neurodevelopmental Disorders",
+      "Disruptive, Impulse-Control and Conduct Disorders",
+      "Feeding and Eating Disorders",
+      "Substance Related and Addictive Disorders",
+
+      { type: "header", text: "Unit V: Therapeutic Approaches" },
+      "Nature and Process of Psychotherapy",
+      "Process of Psychotherapy",
+      "Therapeutic Relationship",
+      "Types of Therapies",
+      "Behaviour Therapy",
+      "Cognitive Therapy Beck and Ellis",
+      "Humanistic-Existential Therapy",
+      "Alternative Therapies",
+      "Factors Contributing to Healing in Psychotherapy",
+      "Ethics in Psychotherapy",
+      "Rehabilitation of the Mentally Ill",
+
+      { type: "header", text: "Unit VI: Attitude and Social Cognition" },
+      "Introduction",
+      "Explaining Social Behaviour",
+      "Nature and Components of Attitudes",
+      "Attitude Formation",
+      "Attitude Change",
+      "Attitude-Behaviour Relationship",
+      "Prejudice", 
+      "Discrimination",
+      "Strategies for Handling Prejudice",
+
+      { type: "header", text: "Unit VII: Social Influence and Group Processes" },
+      "Introduction",
+      "Nature of Groups",
+      "Functions of Groups",
+      "Tuckman's Stage Model Forming, Storming, Norming, Performing, Adjourning",
+      "Type of Groups",
+      "Influence of Group on Individual Behaviour",
+      "Social Loafing",
+      "Group Polarisation"
+    ];
+    const levels = [
+      { label: "Don't Know", class: "dk" },
+      { label: "Easy", class: "easy" },
+      { label: "Medium", class: "med" },
+      { label: "Hard", class: "hard" }
+    ];
+    const container = document.getElementById("tracker");
+    let stored = JSON.parse(localStorage.getItem("trackerData")) || {};
+    topics.forEach((t, i) => {
+      if (typeof t === "object" && t.type === "header") {
+        const header = document.createElement("div");
+        header.className = "unit-header";
+        header.textContent = t.text;
+        container.appendChild(header);
+      } else {
+        const div = document.createElement("div");
+        div.className = "topic";
+        let savedVal = stored["q" + i] || 1;
+        div.innerHTML = `
+          <div class="topic-title">${t}</div>
+          <div class="slider-container">
+            <input type="range" min="1" max="4" value="${savedVal}" id="q${i}" class="slider">
+            <div class="label" id="label${i}"></div>
+          </div>
+        `;
+        container.appendChild(div);
+        updateLabel(i, savedVal);
+        document.getElementById("q" + i).addEventListener("input", (e) => {
+          let val = e.target.value;
+          updateLabel(i, val);
+          stored["q" + i] = val;
+          localStorage.setItem("trackerData", JSON.stringify(stored));
+        });
+      }
+    });
+    function updateLabel(index, val) {
+      const label = document.getElementById("label" + index);
+      if (!label) return;
+      label.className = "label " + levels[val - 1].class;
+      label.textContent = levels[val - 1].label;
+    }
+    function generateReport() {
+      const reportDiv = document.getElementById("report");
+      reportDiv.innerHTML = "<h2>Your Report</h2>";
+      let counts = { dk: 0, easy: 0, med: 0, hard: 0 };
+      topics.forEach((t, i) => {
+        if (typeof t === "object") {
+          const unit = document.createElement("div");
+          unit.className = "unit-header";
+          unit.textContent = t.text;
+          reportDiv.appendChild(unit);
+        } else {
+          let val = stored["q" + i] || 1;
+          let obj = levels[val - 1];
+          const row = document.createElement("div");
+          row.className = `report-item ${obj.class}`;
+          row.textContent = `${t} — ${obj.label}`;
+          reportDiv.appendChild(row);
+          counts[obj.class]++;
+        }
+      });
+      const summary = document.createElement("div");
+      summary.className = "summary";
+      summary.innerHTML =
+        `Don't Know: ${counts.dk} | Easy: ${counts.easy} | Medium: ${counts.med} | Hard: ${counts.hard}`;
+      reportDiv.appendChild(summary);
+      reportDiv.scrollIntoView({ behavior: "smooth" });
+    }
+    function downloadPNG() {
+      const element = document.getElementById("report");
+      if (!element.innerHTML.trim()) {
+        alert("Please generate the report first!");
+        return;
+      }
+      html2canvas(element, { backgroundColor: "#330014", scale: 2 })
+        .then((canvas) => {
+          const link = document.createElement("a");
+          link.download = "Psychology_Report.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        });
+    }
+    function clearAll() {
+      if (!confirm("Are you sure you want to clear all your ratings?")) return;
+      localStorage.removeItem("trackerData");
+      stored = {};
+      topics.forEach((t, i) => {
+        let slider = document.getElementById("q" + i);
+        if (slider) {
+          slider.value = 1;
+          updateLabel(i, 1);
+        }
+      });
+      document.getElementById("report").innerHTML = "";
+    }
+  </script>
+</body>
+</html>
